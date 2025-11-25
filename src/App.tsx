@@ -144,7 +144,7 @@ const App: React.FC = () => {
                 Simpsons (for fun)
               </h1>
               <p className="text-xs sm:text-sm text-slate-800/80">
-                Explora Springfield y encontrá el capítulo justo para no
+                Explorá Springfield y encontrá el capítulo justo para no
                 quedarte dormido.
               </p>
             </div>
