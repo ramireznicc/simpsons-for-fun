@@ -13,6 +13,8 @@ export default {
       },
       fontFamily: {
         sans: ["'Poppins'", "system-ui", "sans-serif"],
+        bangers: ["'Bangers'", "cursive"],
+        rock: ["'Rock Salt'", "cursive"],
       },
       borderRadius: {
         xl: "1rem",

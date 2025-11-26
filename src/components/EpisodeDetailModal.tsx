@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Calendar, Star, Tv, Check } from "lucide-react";
+import { X, Calendar, Star, Tv, Check, Clock } from "lucide-react";
 import type { Episode } from "../types";
 
 type EpisodeDetailModalProps = {
@@ -7,6 +7,8 @@ type EpisodeDetailModalProps = {
   onClose: () => void;
   isWatched: boolean;
   onToggleWatched: () => void;
+  isWatchLater: boolean;
+  onToggleWatchLater: () => void;
 };
 
 const EpisodeDetailModal: React.FC<EpisodeDetailModalProps> = ({
@@ -14,6 +16,8 @@ const EpisodeDetailModal: React.FC<EpisodeDetailModalProps> = ({
   onClose,
   isWatched,
   onToggleWatched,
+  isWatchLater,
+  onToggleWatchLater,
 }) => {
   return (
     <div
@@ -119,6 +123,35 @@ const EpisodeDetailModal: React.FC<EpisodeDetailModalProps> = ({
               }`}
             >
               {isWatched ? "Ya viste este episodio" : "Marcar como visto"}
+            </span>
+          </button>
+
+          {/* Botón para ver después */}
+          <button
+            onClick={onToggleWatchLater}
+            className={`w-full rounded-xl p-3 border-2 transition-all duration-200 flex items-center gap-3 group ${
+              isWatchLater
+                ? "bg-simpsonOrange/10 border-simpsonOrange hover:bg-simpsonOrange/15"
+                : "bg-white/90 border-simpsonSky/30 hover:border-simpsonSky/50 hover:bg-white"
+            }`}
+          >
+            <div
+              className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                isWatchLater
+                  ? "bg-simpsonOrange shadow-soft"
+                  : "bg-slate-100 group-hover:bg-slate-200"
+              }`}
+            >
+              {isWatchLater && <Clock className="w-4 h-4 text-white" strokeWidth={3} />}
+            </div>
+            <span
+              className={`text-sm font-medium transition-colors ${
+                isWatchLater
+                  ? "text-simpsonOrange"
+                  : "text-slate-700 group-hover:text-slate-900"
+              }`}
+            >
+              {isWatchLater ? "Guardado para ver después" : "Guardar para ver después"}
             </span>
           </button>
 

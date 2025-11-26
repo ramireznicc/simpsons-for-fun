@@ -1,14 +1,17 @@
-import React from "react";
-import { X, Trash2, ListCheck, Star } from "lucide-react";
+import React, { useState } from "react";
+import { X, Trash2, ListCheck, Star, Clock, Check } from "lucide-react";
 import type { Episode } from "../types";
 
 type WatchedDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   watchedEpisodes: Episode[];
+  watchLaterEpisodes: Episode[];
   onEpisodeClick: (episode: Episode) => void;
   onToggleWatched: (episodeId: string) => void;
+  onToggleWatchLater: (episodeId: string) => void;
   onClearAll: () => void;
+  onClearAllWatchLater: () => void;
   totalEpisodes: number;
 };
 
@@ -16,13 +19,21 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
   isOpen,
   onClose,
   watchedEpisodes,
+  watchLaterEpisodes,
   onEpisodeClick,
   onToggleWatched,
+  onToggleWatchLater,
   onClearAll,
+  onClearAllWatchLater,
   totalEpisodes,
 }) => {
+  const [activeTab, setActiveTab] = useState<"watched" | "watchLater">("watched");
   const watchedCount = watchedEpisodes.length;
+  const watchLaterCount = watchLaterEpisodes.length;
   const percentage = totalEpisodes > 0 ? (watchedCount / totalEpisodes) * 100 : 0;
+
+  const currentEpisodes = activeTab === "watched" ? watchedEpisodes : watchLaterEpisodes;
+  const currentCount = activeTab === "watched" ? watchedCount : watchLaterCount;
 
   return (
     <>
@@ -52,7 +63,7 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                   Mis episodios
                 </h2>
                 <p className="text-xs text-slate-700">
-                  {watchedCount} de {totalEpisodes} vistos
+                  {watchedCount} vistos · {watchLaterCount} guardados
                 </p>
               </div>
             </div>
@@ -65,11 +76,41 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
             </button>
           </div>
 
-          {/* Stats */}
+          {/* Tabs */}
+          <div className="flex bg-white/50 border-b border-simpsonSky/20">
+            <button
+              onClick={() => setActiveTab("watched")}
+              className={`flex-1 px-4 py-3 text-sm font-semibold transition-all ${
+                activeTab === "watched"
+                  ? "text-simpsonGreen border-b-2 border-simpsonGreen bg-white/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>Vistos ({watchedCount})</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab("watchLater")}
+              className={`flex-1 px-4 py-3 text-sm font-semibold transition-all ${
+                activeTab === "watchLater"
+                  ? "text-simpsonOrange border-b-2 border-simpsonOrange bg-white/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>Para ver ({watchLaterCount})</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Stats - Progreso de episodios vistos */}
           <div className="px-4 py-4 bg-white/50 border-b border-simpsonSky/20">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600 font-medium">Progreso</span>
+                <span className="text-slate-600 font-medium">Progreso de episodios vistos</span>
                 <span className="text-slate-900 font-bold">
                   {percentage.toFixed(1)}%
                 </span>
@@ -85,21 +126,31 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
 
           {/* Lista de episodios */}
           <div className="flex-1 overflow-y-auto px-4 py-4">
-            {watchedCount === 0 ? (
+            {currentCount === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                <div className="w-16 h-16 rounded-full bg-simpsonSky/10 flex items-center justify-center mb-3">
-                  <ListCheck className="w-8 h-8 text-simpsonSky/40" />
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${
+                  activeTab === "watched" ? "bg-simpsonGreen/10" : "bg-simpsonOrange/10"
+                }`}>
+                  {activeTab === "watched" ? (
+                    <Check className="w-8 h-8 text-simpsonGreen/40" />
+                  ) : (
+                    <Clock className="w-8 h-8 text-simpsonOrange/40" />
+                  )}
                 </div>
                 <p className="text-sm text-slate-600 mb-1">
-                  No has marcado ningún episodio
+                  {activeTab === "watched"
+                    ? "No has marcado ningún episodio como visto"
+                    : "No tienes episodios guardados"}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Empieza a marcar episodios como vistos para verlos aquí
+                  {activeTab === "watched"
+                    ? "Empieza a marcar episodios como vistos para verlos aquí"
+                    : "Guarda episodios para verlos más tarde"}
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
-                {watchedEpisodes
+                {currentEpisodes
                   .sort((a, b) => {
                     if (a.season !== b.season) return a.season - b.season;
                     return a.episode - b.episode;
@@ -129,7 +180,7 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                               {episode.name}
                             </h3>
                             <span className="text-[0.65rem] font-semibold text-slate-700 bg-simpsonYellow/60 px-1.5 py-0.5 rounded whitespace-nowrap">
-                              S{episode.season.toString().padStart(2, "0")}E
+                              T{episode.season.toString().padStart(2, "0")} · E
                               {episode.episode.toString().padStart(2, "0")}
                             </span>
                           </div>
@@ -151,13 +202,19 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onToggleWatched(
-                            `S${episode.season}E${episode.episode}`
-                          );
+                          if (activeTab === "watched") {
+                            onToggleWatched(
+                              `S${episode.season}E${episode.episode}`
+                            );
+                          } else {
+                            onToggleWatchLater(
+                              `S${episode.season}E${episode.episode}`
+                            );
+                          }
                         }}
                         className="w-full px-3 py-1.5 text-[0.7rem] font-medium text-simpsonRed hover:bg-simpsonRed/5 active:bg-simpsonRed/10 transition-colors border-t border-simpsonSky/10"
                       >
-                        Desmarcar
+                        Quitar de la lista
                       </button>
                     </div>
                   ))}
@@ -166,22 +223,26 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
           </div>
 
           {/* Footer con botón limpiar */}
-          {watchedCount > 0 && (
+          {currentCount > 0 && (
             <div className="px-4 py-3 border-t border-simpsonSky/20 bg-white/50">
               <button
                 onClick={() => {
-                  if (
-                    window.confirm(
-                      "¿Estás seguro de que quieres borrar todos los episodios marcados? Esta acción no se puede deshacer."
-                    )
-                  ) {
-                    onClearAll();
+                  const message =
+                    activeTab === "watched"
+                      ? "¿Estás seguro de que quieres borrar todos los episodios marcados como vistos?"
+                      : "¿Estás seguro de que quieres borrar todos los episodios guardados?";
+                  if (window.confirm(message + " Esta acción no se puede deshacer.")) {
+                    if (activeTab === "watched") {
+                      onClearAll();
+                    } else {
+                      onClearAllWatchLater();
+                    }
                   }
                 }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-simpsonRed text-white text-sm font-semibold shadow-soft hover:bg-simpsonRed/90 active:scale-[0.98] transition-all"
               >
                 <Trash2 className="w-4 h-4" />
-                Limpiar todo el historial
+                Limpiar toda la lista
               </button>
             </div>
           )}

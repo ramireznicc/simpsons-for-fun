@@ -10,11 +10,11 @@ type EpisodeCardProps = {
 const EpisodeCard: React.FC<EpisodeCardProps> = ({ episode, onClick }) => {
   return (
     <li
-      className="bg-white rounded-2xl shadow-soft border border-simpsonSky/30 p-3 flex gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-[1px] active:scale-[0.99] transition-all duration-150"
+      className="bg-white rounded-xl shadow-soft border border-simpsonSky/30 p-2.5 flex gap-2.5 cursor-pointer hover:shadow-lg hover:-translate-y-[1px] active:scale-[0.99] transition-all duration-150"
       onClick={() => onClick?.(episode)}
     >
       {episode.imageUrl && (
-        <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-simpsonSky/20">
+        <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-simpsonSky/20">
           <img
             src={episode.imageUrl}
             alt={episode.name}
@@ -24,8 +24,8 @@ const EpisodeCard: React.FC<EpisodeCardProps> = ({ episode, onClick }) => {
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-1">
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-slate-900 truncate">
             {episode.name}
           </h3>
@@ -34,10 +34,7 @@ const EpisodeCard: React.FC<EpisodeCardProps> = ({ episode, onClick }) => {
             {episode.episode.toString().padStart(2, "0")}
           </span>
         </div>
-        <p className="text-[0.7rem] text-slate-600 line-clamp-2">
-          {episode.overview || "Sinopsis no disponible en español."}
-        </p>
-        <div className="flex items-center justify-between mt-2 gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <span
               className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${

@@ -66,6 +66,13 @@ export async function fetchSeasonEpisodes(
   return data.episodes as TMDBEpisode[];
 }
 
+// Formatea fecha de YYYY-MM-DD a DD/MM/YYYY
+function formatDate(dateString: string | null): string | null {
+  if (!dateString) return null;
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+}
+
 export function mapTMDBEpisodeToEpisode(ep: TMDBEpisode): Episode {
   return {
     id: ep.id,
@@ -73,7 +80,7 @@ export function mapTMDBEpisodeToEpisode(ep: TMDBEpisode): Episode {
     overview: ep.overview,
     season: ep.season_number,
     episode: ep.episode_number,
-    airDate: ep.air_date,
+    airDate: formatDate(ep.air_date),
     rating: ep.vote_average,
     voteCount: ep.vote_count,
     imageUrl: ep.still_path ? `${TMDB_IMAGE_BASE}${ep.still_path}` : null,

@@ -16,12 +16,10 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   onEpisodeClick,
 }) => {
   return (
-    <section className="mt-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-slate-900">
-          Episodios (ordenados por rating)
-        </h2>
-      </div>
+    <section>
+      <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-4">
+        📺 Lista de episodios
+      </h2>
 
       {loading && (
         <ul className="space-y-3 max-h-[70vh] overflow-y-auto -mx-2 px-2">
