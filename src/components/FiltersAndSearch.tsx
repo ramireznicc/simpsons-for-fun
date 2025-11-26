@@ -147,17 +147,6 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
           <div className="inline-flex rounded-full bg-white/80 border border-simpsonSky/30 p-0.5 text-[0.7rem]">
             <button
               type="button"
-              onClick={() => setSortMode("rating")}
-              className={`px-2 py-0.5 rounded-full transition text-xs ${
-                sortMode === "rating"
-                  ? "bg-simpsonSky text-white shadow-soft"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              Rating
-            </button>
-            <button
-              type="button"
               onClick={() => setSortMode("airDate")}
               className={`px-2 py-0.5 rounded-full transition text-xs ${
                 sortMode === "airDate"
@@ -166,6 +155,17 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
               }`}
             >
               Emisión
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortMode("rating")}
+              className={`px-2 py-0.5 rounded-full transition text-xs ${
+                sortMode === "rating"
+                  ? "bg-simpsonSky text-white shadow-soft"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Rating
             </button>
           </div>
         </div>

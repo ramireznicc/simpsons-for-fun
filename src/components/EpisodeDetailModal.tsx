@@ -1,15 +1,19 @@
 import React from "react";
-import { X, Calendar, Star, Tv, Clock } from "lucide-react";
+import { X, Calendar, Star, Tv, Check } from "lucide-react";
 import type { Episode } from "../types";
 
 type EpisodeDetailModalProps = {
   episode: Episode;
   onClose: () => void;
+  isWatched: boolean;
+  onToggleWatched: () => void;
 };
 
 const EpisodeDetailModal: React.FC<EpisodeDetailModalProps> = ({
   episode,
   onClose,
+  isWatched,
+  onToggleWatched,
 }) => {
   return (
     <div
@@ -89,23 +93,42 @@ const EpisodeDetailModal: React.FC<EpisodeDetailModalProps> = ({
             </p>
           </div>
 
-          {/* Acciones futuras (placeholder simple por ahora) */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2 text-slate-600">
-              <Clock className="w-3.5 h-3.5" />
-              <span>
-                Temporada {episode.season} · Episodio {episode.episode}
-              </span>
-            </div>
-
-            {/* Botón básico de cerrar para mobile a mano */}
-            <button
-              onClick={onClose}
-              className="ml-auto px-3 py-1.5 rounded-full bg-simpsonSky text-white text-xs font-semibold shadow-soft active:scale-95 transition-all"
+          {/* Checkbox de episodio visto */}
+          <button
+            onClick={onToggleWatched}
+            className={`w-full rounded-xl p-3 border-2 transition-all duration-200 flex items-center gap-3 group ${
+              isWatched
+                ? "bg-simpsonGreen/10 border-simpsonGreen hover:bg-simpsonGreen/15"
+                : "bg-white/90 border-simpsonSky/30 hover:border-simpsonSky/50 hover:bg-white"
+            }`}
+          >
+            <div
+              className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                isWatched
+                  ? "bg-simpsonGreen shadow-soft"
+                  : "bg-slate-100 group-hover:bg-slate-200"
+              }`}
             >
-              Cerrar
-            </button>
-          </div>
+              {isWatched && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+            </div>
+            <span
+              className={`text-sm font-medium transition-colors ${
+                isWatched
+                  ? "text-simpsonGreen"
+                  : "text-slate-700 group-hover:text-slate-900"
+              }`}
+            >
+              {isWatched ? "Ya viste este episodio" : "Marcar como visto"}
+            </span>
+          </button>
+
+          {/* Botón de cerrar */}
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2.5 rounded-xl bg-simpsonSky text-white text-sm font-semibold shadow-soft hover:bg-simpsonSky/90 active:scale-[0.98] transition-all"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

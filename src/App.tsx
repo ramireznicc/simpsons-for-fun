@@ -11,6 +11,10 @@ import StatsSection, { type GlobalStats } from "./components/StatsSection";
 import FiltersAndSearch from "./components/FiltersAndSearch";
 import EpisodeList from "./components/EpisodeList";
 import EpisodeDetailModal from "./components/EpisodeDetailModal";
+import WatchedDrawer from "./components/WatchedDrawer";
+
+// Hooks
+import { useWatchedEpisodes } from "./hooks/useWatchedEpisodes";
 
 // Tipo extendido con bayesianScore
 type EpisodeWithScore = Episode & {
@@ -31,7 +35,12 @@ const App: React.FC = () => {
     null
   );
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
-  const [sortMode, setSortMode] = useState<"rating" | "airDate">("rating");
+  const [sortMode, setSortMode] = useState<"rating" | "airDate">("airDate");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Hook para episodios vistos
+  const { toggleWatched, isWatched, watchedEpisodes, clearAll } =
+    useWatchedEpisodes();
 
   useEffect(() => {
     const loadData = async () => {
@@ -158,6 +167,11 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Obtener episodios vistos completos
+  const watchedEpisodesList = episodes.filter((ep) =>
+    watchedEpisodes.has(`S${ep.season}E${ep.episode}`)
+  );
+
   return (
     <div className="min-h-screen bg-simpsonSky flex flex-col">
       {/* Header */}
@@ -177,6 +191,22 @@ const App: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* Botón para abrir drawer */}
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="relative flex items-center gap-2 px-3 py-2 rounded-full bg-simpsonSky text-white text-xs sm:text-sm font-semibold shadow-soft hover:bg-simpsonSky/90 active:scale-95 transition-all"
+          >
+            <span className="hidden sm:inline">Mis episodios</span>
+            <div className="flex items-center gap-1">
+              <span className="text-base">📺</span>
+              {watchedEpisodes.size > 0 && (
+                <span className="min-w-[1.25rem] h-5 flex items-center justify-center px-1 rounded-full bg-simpsonOrange text-white text-xs font-bold">
+                  {watchedEpisodes.size}
+                </span>
+              )}
+            </div>
+          </button>
         </div>
       </header>
 
@@ -219,8 +249,28 @@ const App: React.FC = () => {
           <EpisodeDetailModal
             episode={selectedEpisode}
             onClose={() => setSelectedEpisode(null)}
+            isWatched={isWatched(
+              `S${selectedEpisode.season}E${selectedEpisode.episode}`
+            )}
+            onToggleWatched={() =>
+              toggleWatched(`S${selectedEpisode.season}E${selectedEpisode.episode}`)
+            }
           />
         )}
+
+        {/* Drawer de episodios vistos */}
+        <WatchedDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          watchedEpisodes={watchedEpisodesList}
+          onEpisodeClick={(episode) => {
+            setSelectedEpisode(episode);
+            setIsDrawerOpen(false);
+          }}
+          onToggleWatched={toggleWatched}
+          onClearAll={clearAll}
+          totalEpisodes={episodes.length}
+        />
       </main>
 
       {/* Footer */}
