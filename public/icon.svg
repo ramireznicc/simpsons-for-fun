@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#FFD90F" rx="80"/>
+
+  <!-- Donut outer circle -->
+  <circle cx="256" cy="256" r="160" fill="#D2691E"/>
+
+  <!-- Donut hole -->
+  <circle cx="256" cy="256" r="80" fill="#FFD90F"/>
+
+  <!-- Pink frosting -->
+  <ellipse cx="256" cy="200" rx="160" ry="100" fill="#FF69B4"/>
+
+  <!-- Sprinkles -->
+  <rect x="200" y="160" width="8" height="30" fill="#FF0000" rx="4" transform="rotate(-20 204 175)"/>
+  <rect x="240" y="150" width="8" height="30" fill="#00FF00" rx="4" transform="rotate(15 244 165)"/>
+  <rect x="280" y="155" width="8" height="30" fill="#0000FF" rx="4" transform="rotate(-30 284 170)"/>
+  <rect x="320" y="165" width="8" height="30" fill="#FFFF00" rx="4" transform="rotate(25 324 180)"/>
+  <rect x="220" y="190" width="8" height="30" fill="#FF00FF" rx="4" transform="rotate(-10 224 205)"/>
+  <rect x="300" y="195" width="8" height="30" fill="#00FFFF" rx="4" transform="rotate(20 304 210)"/>
+  <rect x="260" y="180" width="8" height="30" fill="#FFA500" rx="4" transform="rotate(-25 264 195)"/>
+
+  <!-- Bottom text "S" for Simpsons -->
+  <text x="256" y="430" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="#2C5F2D" text-anchor="middle">S</text>
+</svg>
