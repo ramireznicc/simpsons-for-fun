@@ -1,17 +1,19 @@
 import React from "react";
 import type { Episode } from "../types";
-import { Shuffle, Search } from "lucide-react";
+import { Shuffle, Search, Star } from "lucide-react";
 
 type FiltersAndSearchProps = {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedSeason: number | "all";
   setSelectedSeason: (value: number | "all") => void;
-  statsTotalSeasons: number | undefined;
+  statsTotalSeasons?: number;
   filteredCount: number;
   onRandomClick: () => void;
   randomDisabled: boolean;
   currentEpisode: Episode | null;
+  sortMode: "rating" | "airDate";
+  setSortMode: (mode: "rating" | "airDate") => void;
 };
 
 const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
@@ -24,6 +26,8 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
   onRandomClick,
   randomDisabled,
   currentEpisode,
+  sortMode,
+  setSortMode,
 }) => {
   return (
     <section className="mt-4 mb-4 space-y-3">
@@ -64,7 +68,7 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
             <div className="flex items-center justify-between mt-1 gap-2">
               <div className="flex items-center gap-1.5">
                 <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                     currentEpisode.rating >= 8
                       ? "bg-simpsonGreen/15 text-simpsonGreen"
                       : currentEpisode.rating >= 7
@@ -72,7 +76,8 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
                       : "bg-simpsonRed/10 text-simpsonRed"
                   }`}
                 >
-                  ⭐ {currentEpisode.rating.toFixed(1)}
+                  <Star className="w-3 h-3 fill-current" />
+                  {currentEpisode.rating.toFixed(1)}
                 </span>
                 <span className="text-[0.65rem] text-slate-500">
                   ({currentEpisode.voteCount.toLocaleString("es-ES")} votos)
@@ -112,30 +117,60 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
         </button>
       </div>
 
-      {/* Filtro por temporada */}
-      <div className="flex items-center gap-2 text-xs text-slate-700">
-        <span className="hidden sm:inline">Filtrar por temporada:</span>
-        <select
-          value={selectedSeason}
-          onChange={(e) =>
-            setSelectedSeason(
-              e.target.value === "all" ? "all" : Number(e.target.value)
-            )
-          }
-          className="text-xs bg-white rounded-full px-3 py-1 border border-simpsonSky/40 shadow-soft focus:outline-none"
-        >
-          <option value="all">Todas las temporadas</option>
-          {statsTotalSeasons &&
-            Array.from({ length: statsTotalSeasons }, (_, i) => i + 1).map(
-              (season) => (
-                <option key={season} value={season}>
-                  Temporada {season}
-                </option>
+      {/* Filtro por temporada + selector de orden */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-slate-700">
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline">Filtrar por temporada:</span>
+          <select
+            value={selectedSeason}
+            onChange={(e) =>
+              setSelectedSeason(
+                e.target.value === "all" ? "all" : Number(e.target.value)
               )
-            )}
-        </select>
+            }
+            className="text-xs bg-white rounded-full px-3 py-1 border border-simpsonSky/40 shadow-soft focus:outline-none"
+          >
+            <option value="all">Todas las temporadas</option>
+            {statsTotalSeasons &&
+              Array.from({ length: statsTotalSeasons }, (_, i) => i + 1).map(
+                (season) => (
+                  <option key={season} value={season}>
+                    Temporada {season}
+                  </option>
+                )
+              )}
+          </select>
+        </div>
 
-        <span className="ml-auto text-[0.7rem] text-slate-500">
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <span className="hidden sm:inline text-slate-500">Ordenar por:</span>
+          <div className="inline-flex rounded-full bg-white/80 border border-simpsonSky/30 p-0.5 text-[0.7rem]">
+            <button
+              type="button"
+              onClick={() => setSortMode("rating")}
+              className={`px-2 py-0.5 rounded-full transition text-xs ${
+                sortMode === "rating"
+                  ? "bg-simpsonSky text-white shadow-soft"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Rating
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortMode("airDate")}
+              className={`px-2 py-0.5 rounded-full transition text-xs ${
+                sortMode === "airDate"
+                  ? "bg-simpsonSky text-white shadow-soft"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Emisión
+            </button>
+          </div>
+        </div>
+
+        <span className="text-[0.7rem] text-slate-500 sm:ml-2">
           {filteredCount} episodio
           {filteredCount === 1 ? "" : "s"} encontrados
         </span>

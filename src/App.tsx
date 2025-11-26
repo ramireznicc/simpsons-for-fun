@@ -10,18 +10,28 @@ import type { Episode } from "./types";
 import StatsSection, { type GlobalStats } from "./components/StatsSection";
 import FiltersAndSearch from "./components/FiltersAndSearch";
 import EpisodeList from "./components/EpisodeList";
+import EpisodeDetailModal from "./components/EpisodeDetailModal";
+
+// Tipo extendido con bayesianScore
+type EpisodeWithScore = Episode & {
+  bayesianScore: number;
+};
 
 const App: React.FC = () => {
   const [stats, setStats] = useState<GlobalStats | null>(null);
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [episodes, setEpisodes] = useState<EpisodeWithScore[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingEpisodes, setLoadingEpisodes] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados para búsqueda, filtro y episodio destacado
+  // Estados para búsqueda, filtro, orden y episodios destacados
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
-  const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
+  const [currentEpisode, setCurrentEpisode] = useState<EpisodeWithScore | null>(
+    null
+  );
+  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
+  const [sortMode, setSortMode] = useState<"rating" | "airDate">("rating");
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,7 +75,7 @@ const App: React.FC = () => {
         const m = 100;
 
         // Score bayesiano por episodio
-        const episodesWithScore = allEpisodes.map((ep) => {
+        const episodesWithScore: EpisodeWithScore[] = allEpisodes.map((ep) => {
           const v = ep.voteCount;
           const R = ep.rating;
           const score = (v / (v + m)) * R + (m / (v + m)) * C;
@@ -107,26 +117,44 @@ const App: React.FC = () => {
     loadData();
   }, []);
 
-  // Lista filtrada según búsqueda y temporada
-  const filteredEpisodes = episodes.filter((ep) => {
-    const matchesSeason =
-      selectedSeason === "all" ? true : ep.season === selectedSeason;
+  // Episodios filtrados y ordenados según modo
+  const filteredAndSortedEpisodes = React.useMemo(() => {
+    const filtered = episodes.filter((ep) => {
+      const matchesSeason =
+        selectedSeason === "all" ? true : ep.season === selectedSeason;
 
-    const q = searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      q.length === 0
-        ? true
-        : ep.name.toLowerCase().includes(q) ||
-          ep.overview.toLowerCase().includes(q);
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        q.length === 0
+          ? true
+          : ep.name.toLowerCase().includes(q) ||
+            ep.overview.toLowerCase().includes(q);
 
-    return matchesSeason && matchesSearch;
-  });
+      return matchesSeason && matchesSearch;
+    });
+
+    if (sortMode === "rating") {
+      return [...filtered].sort((a, b) => b.bayesianScore - a.bayesianScore);
+    }
+
+    // Orden por fecha de emisión (ascendente)
+    return [...filtered].sort((a, b) => {
+      const da = a.airDate ?? "";
+      const db = b.airDate ?? "";
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return da.localeCompare(db);
+    });
+  }, [episodes, selectedSeason, searchQuery, sortMode]);
 
   // Función para seleccionar un capítulo random de la lista filtrada
   const pickRandomEpisode = () => {
-    if (filteredEpisodes.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * filteredEpisodes.length);
-    setCurrentEpisode(filteredEpisodes[randomIndex]);
+    if (filteredAndSortedEpisodes.length === 0) return;
+    const randomIndex = Math.floor(
+      Math.random() * filteredAndSortedEpisodes.length
+    );
+    setCurrentEpisode(filteredAndSortedEpisodes[randomIndex]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -169,20 +197,30 @@ const App: React.FC = () => {
               selectedSeason={selectedSeason}
               setSelectedSeason={setSelectedSeason}
               statsTotalSeasons={stats?.totalSeasons}
-              filteredCount={filteredEpisodes.length}
+              filteredCount={filteredAndSortedEpisodes.length}
               onRandomClick={pickRandomEpisode}
-              randomDisabled={filteredEpisodes.length === 0}
+              randomDisabled={filteredAndSortedEpisodes.length === 0}
               currentEpisode={currentEpisode}
+              sortMode={sortMode}
+              setSortMode={setSortMode}
             />
 
             <EpisodeList
-              episodes={filteredEpisodes}
+              episodes={filteredAndSortedEpisodes}
               loading={loadingEpisodes}
               error={error}
-              // más adelante pasaremos aquí onEpisodeClick para abrir modal
+              onEpisodeClick={(episode) => setSelectedEpisode(episode)}
             />
           </div>
         </div>
+
+        {/* Modal de detalle */}
+        {selectedEpisode && (
+          <EpisodeDetailModal
+            episode={selectedEpisode}
+            onClose={() => setSelectedEpisode(null)}
+          />
+        )}
       </main>
 
       {/* Footer */}

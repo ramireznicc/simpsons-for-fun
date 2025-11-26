@@ -21,7 +21,6 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
         <h2 className="text-lg font-semibold text-slate-900">
           Episodios (ordenados por rating)
         </h2>
-        <p className="text-[0.7rem] text-slate-500">Vista mobile‑first</p>
       </div>
 
       {loading && (
