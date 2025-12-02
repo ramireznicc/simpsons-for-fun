@@ -13,6 +13,7 @@ type WatchedDrawerProps = {
   onClearAll: () => void;
   onClearAllWatchLater: () => void;
   totalEpisodes: number;
+  userRatings: Record<string, number>;
 };
 
 const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
@@ -26,6 +27,7 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
   onClearAll,
   onClearAllWatchLater,
   totalEpisodes,
+  userRatings,
 }) => {
   const [activeTab, setActiveTab] = useState<"watched" | "watchLater">("watched");
   const watchedCount = watchedEpisodes.length;
@@ -194,6 +196,15 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                             {episode.airDate && (
                               <span className="text-[0.65rem] text-slate-500">
                                 {episode.airDate}
+                              </span>
+                            )}
+                            {/* Mostrar valoración del usuario solo en episodios vistos */}
+                            {activeTab === "watched" && userRatings[`S${episode.season}E${episode.episode}`] && (
+                              <span className="inline-flex items-center gap-0.5 text-[0.65rem] bg-simpsonYellow/20 px-1.5 py-0.5 rounded">
+                                <Star className="w-2.5 h-2.5 text-simpsonYellow fill-current" />
+                                <span className="font-bold text-simpsonYellow">
+                                  {userRatings[`S${episode.season}E${episode.episode}`].toFixed(1)}
+                                </span>
                               </span>
                             )}
                           </div>

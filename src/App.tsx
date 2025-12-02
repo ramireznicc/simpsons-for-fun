@@ -5,7 +5,7 @@ import {
   mapTMDBEpisodeToEpisode,
 } from "./api/tmdb";
 import type { Episode } from "./types";
-import { Tv } from "lucide-react";
+import { Tv, LogOut, User, Heart } from "lucide-react";
 
 // Componentes
 import StatsSection, { type GlobalStats } from "./components/StatsSection";
@@ -14,10 +14,13 @@ import FiltersAndSearch from "./components/FiltersAndSearch";
 import EpisodeList from "./components/EpisodeList";
 import EpisodeDetailModal from "./components/EpisodeDetailModal";
 import WatchedDrawer from "./components/WatchedDrawer";
+import LoginPage from "./components/LoginPage";
 
-// Hooks
+// Hooks y Context
 import { useWatchedEpisodes } from "./hooks/useWatchedEpisodes";
 import { useWatchLaterEpisodes } from "./hooks/useWatchLaterEpisodes";
+import { useEpisodeRatings } from "./hooks/useEpisodeRatings";
+import { useAuth } from "./context/AuthContext";
 
 // Tipo extendido con bayesianScore
 type EpisodeWithScore = Episode & {
@@ -25,6 +28,7 @@ type EpisodeWithScore = Episode & {
 };
 
 const App: React.FC = () => {
+  const { user, login, signup, logout, isAuthenticated, loading } = useAuth();
   const [stats, setStats] = useState<GlobalStats | null>(null);
   const [episodes, setEpisodes] = useState<EpisodeWithScore[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -52,6 +56,9 @@ const App: React.FC = () => {
     watchLaterEpisodes,
     clearAll: clearAllWatchLater,
   } = useWatchLaterEpisodes();
+
+  // Hook para valoraciones de episodios
+  const { getRating, setRating, removeRating, ratings } = useEpisodeRatings();
 
   useEffect(() => {
     const loadData = async () => {
@@ -197,6 +204,23 @@ const App: React.FC = () => {
     watchLaterEpisodes.has(`S${ep.season}E${ep.episode}`)
   );
 
+  // Mostrar loading mientras se verifica la autenticación
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-simpsonSky flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🍩</div>
+          <div className="w-12 h-12 mx-auto border-4 border-simpsonYellow border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  // Si el usuario no está autenticado, mostrar LoginPage
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} onSignup={signup} />;
+  }
+
   return (
     <div className="min-h-screen bg-simpsonSky flex flex-col">
       {/* Header */}
@@ -210,24 +234,42 @@ const App: React.FC = () => {
             </div>
           </h1>
 
-          {/* Botón para abrir drawer */}
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-simpsonSky text-white font-semibold shadow-lg hover:bg-simpsonSky/90 hover:shadow-xl active:scale-95 transition-all group flex-shrink-0"
-          >
-            <Tv className="w-5 h-5 sm:w-6 sm:h-6" />
-            {watchedEpisodes.size > 0 && (
-              <span className="min-w-[1.5rem] h-6 flex items-center justify-center px-1.5 rounded-full bg-simpsonOrange text-white text-xs font-bold shadow-md group-hover:scale-110 transition-transform">
-                {watchedEpisodes.size}
-              </span>
-            )}
-          </button>
+          {/* Contenedor de botones a la derecha */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Nombre de usuario */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-white/50 text-slate-900">
+              <User className="w-4 h-4" />
+              <span className="text-sm font-semibold">{user}</span>
+            </div>
+
+            {/* Botón para abrir drawer */}
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-simpsonSky text-white font-semibold shadow-lg hover:bg-simpsonSky/90 hover:shadow-xl active:scale-95 transition-all group"
+            >
+              <Tv className="w-5 h-5 sm:w-6 sm:h-6" />
+              {watchedEpisodes.size > 0 && (
+                <span className="min-w-[1.5rem] h-6 flex items-center justify-center px-1.5 rounded-full bg-simpsonOrange text-white text-xs font-bold shadow-md group-hover:scale-110 transition-transform">
+                  {watchedEpisodes.size}
+                </span>
+              )}
+            </button>
+
+            {/* Botón de logout */}
+            <button
+              onClick={logout}
+              className="flex items-center justify-center p-2 sm:p-2.5 rounded-xl bg-simpsonRed text-white shadow-lg hover:bg-simpsonRed/90 hover:shadow-xl active:scale-95 transition-all"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main content */}
       <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+        <div className="max-w-6xl mx-auto px-4 pt-3 pb-8 sm:pt-4 sm:pb-10 space-y-6">
           {/* Tarjeta 1: Estadísticas */}
           <div className="bg-simpsonCream/95 rounded-2xl sm:rounded-3xl shadow-soft p-4 sm:p-6 border border-white/70">
             <StatsSection
@@ -287,6 +329,18 @@ const App: React.FC = () => {
                 `S${selectedEpisode.season}E${selectedEpisode.episode}`
               )
             }
+            userRating={getRating(
+              `S${selectedEpisode.season}E${selectedEpisode.episode}`
+            )}
+            onRatingChange={(rating) =>
+              setRating(
+                `S${selectedEpisode.season}E${selectedEpisode.episode}`,
+                rating
+              )
+            }
+            onRatingRemove={() =>
+              removeRating(`S${selectedEpisode.season}E${selectedEpisode.episode}`)
+            }
           />
         )}
 
@@ -305,23 +359,22 @@ const App: React.FC = () => {
           onClearAll={clearAll}
           onClearAllWatchLater={clearAllWatchLater}
           totalEpisodes={episodes.length}
+          userRatings={ratings}
         />
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-4 mt-2 text-center text-xs text-white/90">
-        <p>
-          Hecho con cariño por <span className="font-semibold">Nico</span>.
-          Datos proporcionados por{" "}
+      <footer className="w-full py-4 text-center text-sm text-white/90">
+        <p className="flex items-center justify-center gap-1">
+          Hecho con <Heart className="w-4 h-4 text-simpsonYellow fill-simpsonYellow inline-block" /> por{" "}
           <a
-            href="https://www.themoviedb.org/"
+            href="https://github.com/ramireznicc"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-white/70 hover:decoration-white"
+            className="font-semibold underline decoration-white/50 hover:decoration-white transition-all"
           >
-            TMDB
+            ramireznicc
           </a>
-          .
         </p>
       </footer>
     </div>

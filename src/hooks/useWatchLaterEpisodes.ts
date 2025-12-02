@@ -1,50 +1,97 @@
 import { useState, useEffect } from "react";
-
-const STORAGE_KEY = "simpsons-watch-later-episodes";
+import { useAuth } from "../context/AuthContext";
+import {
+  getUserEpisodes,
+  addWatchLaterEpisode,
+  removeWatchLaterEpisode,
+  clearAllWatchLaterEpisodes,
+} from "../services/episodesService";
 
 export const useWatchLaterEpisodes = () => {
-  const [watchLaterEpisodes, setWatchLaterEpisodes] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return new Set(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error("Error loading watch later episodes from localStorage:", error);
-    }
-    return new Set();
-  });
+  const { userId, isAuthenticated } = useAuth();
+  const [watchLaterEpisodes, setWatchLaterEpisodes] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
+  // Cargar episodios desde Firestore cuando el usuario esté autenticado
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(Array.from(watchLaterEpisodes))
-      );
-    } catch (error) {
-      console.error("Error saving watch later episodes to localStorage:", error);
+    if (!isAuthenticated || !userId) {
+      setWatchLaterEpisodes(new Set());
+      setLoading(false);
+      return;
     }
-  }, [watchLaterEpisodes]);
 
-  const toggleWatchLater = (episodeId: string) => {
+    const loadEpisodes = async () => {
+      try {
+        setLoading(true);
+        const data = await getUserEpisodes(userId);
+        setWatchLaterEpisodes(new Set(data.watchLaterEpisodes));
+      } catch (error) {
+        console.error("Error loading watch later episodes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEpisodes();
+  }, [userId, isAuthenticated]);
+
+  const toggleWatchLater = async (episodeId: string) => {
+    if (!userId) return;
+
+    const isCurrentlyWatchLater = watchLaterEpisodes.has(episodeId);
+
+    // Actualizar UI inmediatamente (optimistic update)
     setWatchLaterEpisodes((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(episodeId)) {
+      if (isCurrentlyWatchLater) {
         newSet.delete(episodeId);
       } else {
         newSet.add(episodeId);
       }
       return newSet;
     });
+
+    // Actualizar en Firestore
+    try {
+      if (isCurrentlyWatchLater) {
+        await removeWatchLaterEpisode(userId, episodeId);
+      } else {
+        await addWatchLaterEpisode(userId, episodeId);
+      }
+    } catch (error) {
+      console.error("Error toggling watch later episode:", error);
+      // Revertir en caso de error
+      setWatchLaterEpisodes((prev) => {
+        const newSet = new Set(prev);
+        if (isCurrentlyWatchLater) {
+          newSet.add(episodeId);
+        } else {
+          newSet.delete(episodeId);
+        }
+        return newSet;
+      });
+    }
   };
 
   const isWatchLater = (episodeId: string) => {
     return watchLaterEpisodes.has(episodeId);
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
+    if (!userId) return;
+
+    // Guardar el estado anterior por si hay error
+    const previousState = new Set(watchLaterEpisodes);
     setWatchLaterEpisodes(new Set());
+
+    try {
+      await clearAllWatchLaterEpisodes(userId);
+    } catch (error) {
+      console.error("Error clearing watch later episodes:", error);
+      // Revertir en caso de error
+      setWatchLaterEpisodes(previousState);
+    }
   };
 
-  return { toggleWatchLater, isWatchLater, watchLaterEpisodes, clearAll };
+  return { toggleWatchLater, isWatchLater, watchLaterEpisodes, clearAll, loading };
 };
