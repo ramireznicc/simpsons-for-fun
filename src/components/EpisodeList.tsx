@@ -7,6 +7,8 @@ type EpisodeListProps = {
   loading: boolean;
   error: string | null;
   onEpisodeClick?: (episode: Episode) => void;
+  isWatched?: (episodeId: string) => boolean;
+  isWatchLater?: (episodeId: string) => boolean;
 };
 
 const EpisodeList: React.FC<EpisodeListProps> = ({
@@ -14,6 +16,8 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   loading,
   error,
   onEpisodeClick,
+  isWatched,
+  isWatchLater,
 }) => {
   return (
     <section>
@@ -54,9 +58,18 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
 
       {!loading && episodes.length > 0 && (
         <ul className="space-y-3 max-h-[70vh] overflow-y-auto -mx-2 px-2">
-          {episodes.slice(0, 50).map((ep) => (
-            <EpisodeCard key={ep.id} episode={ep} onClick={onEpisodeClick} />
-          ))}
+          {episodes.slice(0, 50).map((ep) => {
+            const episodeId = `S${ep.season}E${ep.episode}`;
+            return (
+              <EpisodeCard
+                key={ep.id}
+                episode={ep}
+                onClick={onEpisodeClick}
+                isWatched={isWatched?.(episodeId)}
+                isWatchLater={isWatchLater?.(episodeId)}
+              />
+            );
+          })}
         </ul>
       )}
     </section>

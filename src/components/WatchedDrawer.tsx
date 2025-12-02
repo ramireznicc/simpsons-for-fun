@@ -14,6 +14,7 @@ type WatchedDrawerProps = {
   onClearAllWatchLater: () => void;
   totalEpisodes: number;
   userRatings: Record<string, number>;
+  userName?: string;
 };
 
 const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
@@ -28,6 +29,7 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
   onClearAllWatchLater,
   totalEpisodes,
   userRatings,
+  userName,
 }) => {
   const [activeTab, setActiveTab] = useState<"watched" | "watchLater">("watched");
   const watchedCount = watchedEpisodes.length;
@@ -62,7 +64,13 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
               </div>
               <div>
                 <h2 className="text-base font-bold text-slate-900">
-                  Mis episodios
+                  {userName ? (
+                    <>
+                      Episodios de <span className="font-extrabold text-slate-700">{userName}</span>
+                    </>
+                  ) : (
+                    "Mis episodios"
+                  )}
                 </h2>
                 <p className="text-xs text-slate-700">
                   {watchedCount} vistos · {watchLaterCount} guardados
@@ -163,11 +171,11 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                       className="bg-white rounded-xl border border-simpsonSky/20 overflow-hidden shadow-sm hover:shadow-md transition-all"
                     >
                       <div
-                        className="flex gap-3 p-2 cursor-pointer"
+                        className="flex gap-3 p-3 cursor-pointer"
                         onClick={() => onEpisodeClick(episode)}
                       >
                         {episode.imageUrl && (
-                          <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-simpsonSky/20">
+                          <div className="flex-shrink-0 w-24 h-18 rounded-lg overflow-hidden bg-simpsonSky/20">
                             <img
                               src={episode.imageUrl}
                               alt={episode.name}
@@ -178,34 +186,39 @@ const WatchedDrawer: React.FC<WatchedDrawerProps> = ({
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="text-xs font-semibold text-slate-900 line-clamp-1">
+                            <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">
                               {episode.name}
                             </h3>
-                            <span className="text-[0.65rem] font-semibold text-slate-700 bg-simpsonYellow/60 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <span className="text-xs font-semibold text-slate-700 bg-simpsonYellow/60 px-2 py-0.5 rounded whitespace-nowrap">
                               T{episode.season.toString().padStart(2, "0")} · E
                               {episode.episode.toString().padStart(2, "0")}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="inline-flex items-center gap-0.5 text-[0.65rem]">
-                              <Star className="w-2.5 h-2.5 text-simpsonGreen fill-current" />
-                              <span className="font-semibold text-slate-700">
-                                {episode.rating.toFixed(1)}
-                              </span>
-                            </span>
-                            {episode.airDate && (
-                              <span className="text-[0.65rem] text-slate-500">
-                                {episode.airDate}
-                              </span>
-                            )}
-                            {/* Mostrar valoración del usuario solo en episodios vistos */}
-                            {activeTab === "watched" && userRatings[`S${episode.season}E${episode.episode}`] && (
-                              <span className="inline-flex items-center gap-0.5 text-[0.65rem] bg-simpsonYellow/20 px-1.5 py-0.5 rounded">
-                                <Star className="w-2.5 h-2.5 text-simpsonYellow fill-current" />
-                                <span className="font-bold text-simpsonYellow">
-                                  {userRatings[`S${episode.season}E${episode.episode}`].toFixed(1)}
+                          <div className="flex flex-col gap-1.5 mt-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-0.5 text-xs">
+                                <Star className="w-3 h-3 text-simpsonGreen fill-current" />
+                                <span className="font-semibold text-slate-700">
+                                  {episode.rating.toFixed(1)}
                                 </span>
                               </span>
+                              {episode.airDate && (
+                                <span className="text-xs text-slate-500">
+                                  {episode.airDate}
+                                </span>
+                              )}
+                            </div>
+                            {/* Mostrar valoración del usuario solo en episodios vistos */}
+                            {activeTab === "watched" && userRatings[`S${episode.season}E${episode.episode}`] && (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[0.65rem] text-slate-600 font-medium leading-none">Tu valoración:</span>
+                                <span className="inline-flex items-center gap-0.5 text-xs bg-simpsonYellow/20 px-1.5 py-0.5 rounded leading-none">
+                                  <Star className="w-3 h-3 text-simpsonYellow fill-current" />
+                                  <span className="font-bold text-simpsonYellow">
+                                    {userRatings[`S${episode.season}E${episode.episode}`].toFixed(1)}
+                                  </span>
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>

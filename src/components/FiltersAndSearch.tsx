@@ -25,7 +25,7 @@ const FiltersAndSearch: React.FC<FiltersAndSearchProps> = ({
   return (
     <section className="bg-simpsonCream/95 rounded-2xl sm:rounded-3xl shadow-soft p-4 sm:p-6 border border-white/70 space-y-4">
       <h2 className="text-lg sm:text-xl font-semibold text-slate-900">
-        Buscar episodios
+        🔍 Buscar episodios
       </h2>
 
       {/* Buscador */}

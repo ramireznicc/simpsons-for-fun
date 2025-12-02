@@ -117,10 +117,6 @@ const App: React.FC = () => {
         // Rating promedio global
         const globalAverageRating = C;
 
-        // Episodio destacado por defecto = mejor episodio según score
-        const bestEpisode = sortedByScore[0];
-        setCurrentEpisode(bestEpisode || null);
-
         setEpisodes(sortedByScore);
         setStats((prev) => ({
           ...(prev || {
@@ -143,6 +139,29 @@ const App: React.FC = () => {
 
     loadData();
   }, []);
+
+  // Seleccionar episodio recomendado (random con rating > 7 que no esté visto)
+  useEffect(() => {
+    if (episodes.length === 0 || currentEpisode !== null) return;
+
+    // Pequeño delay para asegurar que watchedEpisodes esté cargado desde Firebase
+    const timer = setTimeout(() => {
+      // Filtrar episodios con rating > 7 que no estén marcados como vistos
+      const unwatchedHighRatedEpisodes = episodes.filter((ep) => {
+        const episodeId = `S${ep.season}E${ep.episode}`;
+        return ep.rating > 7 && !watchedEpisodes.has(episodeId);
+      });
+
+      // Seleccionar episodio random
+      const randomEpisode = unwatchedHighRatedEpisodes.length > 0
+        ? unwatchedHighRatedEpisodes[Math.floor(Math.random() * unwatchedHighRatedEpisodes.length)]
+        : episodes.filter(ep => ep.rating > 7)[0] || episodes[0]; // Fallback
+
+      setCurrentEpisode(randomEpisode || null);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [episodes]);
 
   // Episodios filtrados y ordenados según modo
   const filteredAndSortedEpisodes = React.useMemo(() => {
@@ -306,6 +325,8 @@ const App: React.FC = () => {
               loading={loadingEpisodes}
               error={error}
               onEpisodeClick={(episode) => setSelectedEpisode(episode)}
+              isWatched={isWatched}
+              isWatchLater={isWatchLater}
             />
           </div>
         </div>
@@ -360,6 +381,7 @@ const App: React.FC = () => {
           onClearAllWatchLater={clearAllWatchLater}
           totalEpisodes={episodes.length}
           userRatings={ratings}
+          userName={user || undefined}
         />
       </main>
 
